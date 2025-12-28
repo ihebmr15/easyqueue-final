@@ -1,0 +1,78 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Categories - Admin{% endblock %}
+
+{% block body %}
+<h1>Category Management</h1>
+
+<div style="margin-bottom: 20px;">
+    <a href="{{ path('admin_category_add') }}" class="btn btn-success">Add New Category</a>
+    <a href="{{ path('admin_dashboard') }}" class="btn" style="background: #95a5a6;">Back to Dashboard</a>
+</div>
+
+<div class="filters">
+    <form method="get">
+        <div class="form-group">
+            <label for="search">Search Categories:</label>
+            <input type="text" id="search" name="search" value="{{ search|e }}" placeholder="Search by name...">
+        </div>
+        <button type="submit" class="btn">Search</button>
+        <a href="{{ path('admin_category_list') }}" class="btn" style="background: #95a5a6;">Reset</a>
+    </form>
+</div>
+
+{% if categories is empty %}
+    <p>No categories found.</p>
+{% else %}
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Description</th>
+                <th>Status</th>
+                <th>Services Count</th>
+                <th>Created At</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for category in categories %}
+                <tr>
+                    <td>{{ category.id }}</td>
+                    <td><strong>{{ category.name|e }}</strong></td>
+                    <td>{{ category.description|e|default('N/A') }}</td>
+                    <td>
+                        {% if category.isActive %}
+                            <span style="color: #27ae60; font-weight: bold;">Active</span>
+                        {% else %}
+                            <span style="color: #e74c3c; font-weight: bold;">Inactive</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ category.services|length }}</td>
+                    <td>{{ category.createdAt|date('Y-m-d H:i') }}</td>
+                    <td>
+                        <a href="{{ path('admin_category_edit', {'id': category.id}) }}" class="btn" style="padding: 5px 10px; font-size: 0.9em;">Edit</a>
+                        <a href="{{ path('admin_category_toggle', {'id': category.id, '_token': csrf_token('category_toggle')}) }}" 
+                           class="btn" 
+                           style="padding: 5px 10px; font-size: 0.9em; background: {% if category.isActive %}#f39c12{% else %}#27ae60{% endif %};"
+                           onclick="return confirm('Are you sure?')">
+                            {% if category.isActive %}Deactivate{% else %}Activate{% endif %}
+                        </a>
+                        <a href="{{ path('admin_category_delete', {'id': category.id, '_token': csrf_token('category_delete')}) }}" 
+                           class="btn btn-danger" 
+                           style="padding: 5px 10px; font-size: 0.9em;"
+                           onclick="return confirm('Are you sure you want to delete this category? This will fail if it has services.')">
+                            Delete
+                        </a>
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endif %}
+{% endblock %}
+
+
+
+

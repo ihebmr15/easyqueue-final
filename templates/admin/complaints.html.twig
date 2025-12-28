@@ -1,0 +1,37 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Complaints - Admin{% endblock %}
+
+{% block body %}
+<h1>Client Complaints</h1>
+
+{% if complaints is empty %}
+    <p>No complaints yet.</p>
+{% else %}
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Client</th>
+                <th>Service</th>
+                <th>Message</th>
+                <th>Date</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for complaint in complaints %}
+                <tr>
+                    <td>#{{ complaint.id }}</td>
+                    <td>{{ complaint.user.fullname }}<br><small>{{ complaint.user.email }}</small></td>
+                    <td>{{ complaint.service.name }}</td>
+                    <td>{{ complaint.message }}</td>
+                    <td>{{ complaint.createdAt|date('Y-m-d H:i:s') }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endif %}
+
+<p style="margin-top: 20px;"><a href="{{ path('admin_dashboard') }}" class="btn">Back to Dashboard</a></p>
+{% endblock %}
+

@@ -1,0 +1,243 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Admin Dashboard - EasyQueue{% endblock %}
+
+{% block body %}
+<h1>Admin Dashboard</h1>
+
+<div class="stats">
+    <div class="stat-card">
+        <h3>{{ totalUsers }}</h3>
+        <p>Total Users</p>
+    </div>
+    <div class="stat-card">
+        <h3>{{ totalServices }}</h3>
+        <p>Total Services</p>
+    </div>
+    <div class="stat-card">
+        <h3>{{ totalCategories }}</h3>
+        <p>Total Categories</p>
+    </div>
+    <div class="stat-card">
+        <h3>{{ totalTickets }}</h3>
+        <p>Total Tickets</p>
+    </div>
+    <div class="stat-card">
+        <h3>{{ pendingTickets }}</h3>
+        <p>Pending</p>
+    </div>
+    <div class="stat-card">
+        <h3>{{ activeTickets }}</h3>
+        <p>Active</p>
+    </div>
+    <div class="stat-card">
+        <h3>{{ finishedTickets }}</h3>
+        <p>Finished</p>
+    </div>
+    <div class="stat-card">
+        <h3>{{ totalComplaints }}</h3>
+        <p>Complaints</p>
+    </div>
+</div>
+
+<div style="margin-bottom: 20px;">
+    <a href="{{ path('admin_category_list') }}" class="btn btn-success">Manage Categories</a>
+    <a href="{{ path('admin_complaints') }}" class="btn" style="background: #e74c3c; margin-left: 10px;">View Complaints</a>
+</div>
+
+<div class="filters">
+    <h3>Filters</h3>
+    <form method="get">
+        <div class="form-group">
+            <label for="service">Filter by Service:</label>
+            <select name="service" id="service">
+                <option value="">All Services</option>
+                {% for service in services %}
+                    <option value="{{ service.name }}" {% if serviceFilter == service.name %}selected{% endif %}>
+                        {{ service.name }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="status">Filter by Status:</label>
+            <select name="status" id="status">
+                <option value="">All Statuses</option>
+                <option value="pending" {% if statusFilter == 'pending' %}selected{% endif %}>Pending</option>
+                <option value="active" {% if statusFilter == 'active' %}selected{% endif %}>Active</option>
+                <option value="finished" {% if statusFilter == 'finished' %}selected{% endif %}>Finished</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <button type="submit" class="btn">Apply Filters</button>
+            <a href="{{ path('admin_dashboard') }}" class="btn" style="background: #95a5a6;">Clear</a>
+        </div>
+    </form>
+</div>
+
+<h2>Service Management</h2>
+<div style="background: #f8f9fa; padding: 20px; border-radius: 5px; margin-bottom: 30px;">
+    <h3>Add New Service</h3>
+    <form method="post" action="{{ path('admin_service_add') }}" enctype="multipart/form-data" style="max-width: 600px;">
+        <input type="hidden" name="_token" value="{{ csrf_token('service_add') }}">
+        <div class="form-group">
+            <label for="name">Service Name *</label>
+            <input type="text" name="name" id="name" required maxlength="255">
+        </div>
+        <div class="form-group">
+            <label for="description">Description</label>
+            <textarea name="description" id="description" rows="3"></textarea>
+        </div>
+        <div class="form-group">
+            <label for="category_id">Category</label>
+            <select name="category_id" id="category_id">
+                <option value="">No Category</option>
+                {% for category in categories %}
+                    <option value="{{ category.id }}">{{ category.name|e }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="average_wait_time">Average Wait Time (minutes) *</label>
+            <input type="number" name="average_wait_time" id="average_wait_time" min="1" required>
+        </div>
+        <div class="form-group">
+            <label for="image">Service Image (JPEG, PNG, GIF, WebP - Max 5MB)</label>
+            <input type="file" name="image" id="image" accept="image/jpeg,image/png,image/gif,image/webp">
+            <small style="color: #666;">Optional: Upload an image for this service</small>
+        </div>
+        <button type="submit" class="btn btn-success">Add Service</button>
+    </form>
+</div>
+
+<h3>Service Statistics</h3>
+<table>
+    <thead>
+        <tr>
+            <th>Service Name</th>
+            <th>Total Tickets</th>
+            <th>Pending</th>
+            <th>Active</th>
+            <th>Finished</th>
+            <th>Status</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for service in services %}
+            <tr>
+                <td>
+                    <strong>{{ service.name|e }}</strong>
+                    {% if service.category %}
+                        <br><small style="color: #667eea;">Category: {{ service.category.name|e }}</small>
+                    {% endif %}
+                    {% if service.image %}
+                        <br><small style="color: #27ae60;">✓ Has Image</small>
+                    {% endif %}
+                </td>
+                <td>{{ serviceStats[service.name].total ?? 0 }}</td>
+                <td>{{ serviceStats[service.name].pending ?? 0 }}</td>
+                <td>{{ serviceStats[service.name].active ?? 0 }}</td>
+                <td>{{ serviceStats[service.name].finished ?? 0 }}</td>
+                <td>
+                    {% if service.isActive %}
+                        <span style="color: green;">✓ Active</span>
+                    {% else %}
+                        <span style="color: red;">✗ Inactive</span>
+                    {% endif %}
+                </td>
+                <td>
+                    <a href="{{ path('admin_service_edit', {'id': service.id}) }}" class="btn" style="padding: 5px 10px; font-size: 12px; background: #3498db;">Edit</a>
+                    <a href="{{ path('admin_service_toggle', {'id': service.id, '_token': csrf_token('service_toggle')}) }}" class="btn" style="padding: 5px 10px; font-size: 12px; background: {% if service.isActive %}#f39c12{% else %}#27ae60{% endif %};">
+                        {{ service.isActive ? 'Deactivate' : 'Activate' }}
+                    </a>
+                    <a href="{{ path('admin_service_delete', {'id': service.id, '_token': csrf_token('service_delete')}) }}" class="btn btn-danger" style="padding: 5px 10px; font-size: 12px;" onclick="return confirm('Are you sure?')">
+                        Delete
+                    </a>
+                </td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<h2>All Users</h2>
+<table>
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Full Name</th>
+            <th>Email</th>
+            <th>Created At</th>
+            <th>Tickets</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for user in users %}
+            <tr>
+                <td>{{ user.id }}</td>
+                <td>{{ user.fullname }}</td>
+                <td>{{ user.email }}</td>
+                <td>{{ user.createdat ? user.createdat|date('Y-m-d H:i:s') : '' }}</td>
+                <td>{{ user.tickets|length }}</td>
+                <td>
+                    {% if user.tickets|length == 0 %}
+                        <a href="{{ path('admin_user_delete', {'id': user.id, '_token': csrf_token('user_delete')}) }}" class="btn btn-danger" style="padding: 5px 10px; font-size: 12px;" onclick="return confirm('Are you sure?')">
+                            Delete
+                        </a>
+                    {% else %}
+                        <span style="color: #999;">Cannot delete (has tickets)</span>
+                    {% endif %}
+                </td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<h2>All Tickets</h2>
+<table>
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>User</th>
+            <th>Service</th>
+            <th>Ticket #</th>
+            <th>Status</th>
+            <th>Created At</th>
+            <th>Estimated Wait</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for ticket in tickets %}
+            <tr>
+                <td>{{ ticket.id }}</td>
+                <td>{{ ticket.user.fullname }}</td>
+                <td>{{ ticket.servicename }}</td>
+                <td><strong>#{{ ticket.ticketnumber }}</strong></td>
+                <td>
+                    {% if ticket.status == 'pending' %}
+                        <span style="color: orange;">⏳ Pending</span>
+                    {% elseif ticket.status == 'active' %}
+                        <span style="color: green;">✅ Active</span>
+                    {% else %}
+                        <span style="color: gray;">✓ Finished</span>
+                    {% endif %}
+                </td>
+                <td>{{ ticket.createdat ? ticket.createdat|date('Y-m-d H:i:s') : '' }}</td>
+                <td>{{ ticket.estimatedwait }} minutes</td>
+                <td>
+                    {% if ticket.status == 'pending' %}
+                        <a href="{{ path('admin_ticket_activate', {'id': ticket.id, '_token': csrf_token('ticket_activate')}) }}" class="btn btn-success" style="padding: 5px 10px; font-size: 12px;">Activate</a>
+                    {% endif %}
+                    {% if ticket.status != 'finished' %}
+                        <a href="{{ path('admin_ticket_finish', {'id': ticket.id, '_token': csrf_token('ticket_finish')}) }}" class="btn" style="padding: 5px 10px; font-size: 12px;">Mark Finished</a>
+                    {% else %}
+                        <span style="color: #999;">Finished</span>
+                    {% endif %}
+                </td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

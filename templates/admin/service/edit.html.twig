@@ -1,0 +1,61 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Edit Service - Admin{% endblock %}
+
+{% block body %}
+<h1>Edit Service: {{ service.name|e }}</h1>
+
+<div style="max-width: 600px;">
+    <form method="post" action="{{ path('admin_service_edit', {'id': service.id}) }}" enctype="multipart/form-data">
+        <input type="hidden" name="_token" value="{{ csrf_token('service_edit') }}">
+        
+        <div class="form-group">
+            <label for="name">Service Name *</label>
+            <input type="text" id="name" name="name" required maxlength="255" value="{{ service.name|e }}">
+        </div>
+
+        <div class="form-group">
+            <label for="description">Description</label>
+            <textarea id="description" name="description" rows="4">{{ service.description|e }}</textarea>
+        </div>
+
+        <div class="form-group">
+            <label for="category_id">Category</label>
+            <select name="category_id" id="category_id">
+                <option value="">No Category</option>
+                {% for category in categories %}
+                    <option value="{{ category.id }}" {% if service.category and service.category.id == category.id %}selected{% endif %}>
+                        {{ category.name|e }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="average_wait_time">Average Wait Time (minutes) *</label>
+            <input type="number" id="average_wait_time" name="average_wait_time" min="1" required value="{{ service.averageWaitTime }}">
+        </div>
+
+        <div class="form-group">
+            <label for="image">Service Image (JPEG, PNG, GIF, WebP - Max 5MB)</label>
+            {% if service.image %}
+                <div style="margin-bottom: 10px;">
+                    <img src="{{ asset(service.image) }}" alt="{{ service.name|e }}" style="max-width: 200px; border-radius: 5px; border: 1px solid #ddd;">
+                    <p><small>Current image</small></p>
+                </div>
+            {% endif %}
+            <input type="file" name="image" id="image" accept="image/jpeg,image/png,image/gif,image/webp">
+            <small style="color: #666;">Leave empty to keep current image, or upload a new one</small>
+        </div>
+
+        <div style="display: flex; gap: 10px; margin-top: 20px;">
+            <button type="submit" class="btn btn-success">Update Service</button>
+            <a href="{{ path('admin_dashboard') }}" class="btn" style="background: #95a5a6;">Cancel</a>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+
+
+

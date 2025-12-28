@@ -1,0 +1,32 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Submit Complaint - EasyQueue{% endblock %}
+
+{% block body %}
+<h1>Submit a Complaint</h1>
+
+<p>If you had a bad experience with a service, please let us know. Your complaint will be sent to the admin.</p>
+
+<form method="post" style="max-width: 600px; margin-top: 20px;">
+    <input type="hidden" name="_token" value="{{ csrf_token('complaint_new') }}">
+
+    <div class="form-group">
+        <label for="service_id">Service:</label>
+        <select name="service_id" id="service_id" required>
+            <option value="">Select a service...</option>
+            {% for service in services %}
+                <option value="{{ service.id }}">{{ service.name }}</option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <div class="form-group">
+        <label for="message">Complaint Message:</label>
+        <textarea name="message" id="message" rows="6" required placeholder="Describe what went wrong..."></textarea>
+    </div>
+
+    <button type="submit" class="btn">Submit Complaint</button>
+    <a href="{{ path('user_dashboard') }}" class="btn" style="background: #95a5a6; margin-left: 10px;">Cancel</a>
+</form>
+{% endblock %}
+

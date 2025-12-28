@@ -1,0 +1,48 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}My Tickets - EasyQueue{% endblock %}
+
+{% block body %}
+<h1>My Tickets</h1>
+
+{% if tickets is empty %}
+    <p>You don't have any tickets yet. <a href="{{ path('services') }}">Book a ticket</a> to get started!</p>
+{% else %}
+    <table>
+        <thead>
+            <tr>
+                <th>Ticket #</th>
+                <th>Service</th>
+                <th>Status</th>
+                <th>Estimated Wait</th>
+                <th>Created At</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for ticket in tickets %}
+                <tr>
+                    <td><strong>#{{ ticket.ticketnumber }}</strong></td>
+                    <td>{{ ticket.servicename }}</td>
+                    <td>
+                        {% if ticket.status == 'pending' %}
+                            <span style="color: orange;">⏳ Pending</span>
+                        {% elseif ticket.status == 'active' %}
+                            <span style="color: green;">✅ Active</span>
+                        {% else %}
+                            <span style="color: gray;">✓ Finished</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ ticket.estimatedwait }} minutes</td>
+                    <td>{{ ticket.createdat ? ticket.createdat|date('Y-m-d H:i:s') : '' }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endif %}
+
+<p style="margin-top: 20px;">
+    <a href="{{ path('services') }}" class="btn">Book Another Ticket</a>
+    <a href="{{ path('complaint_new') }}" class="btn" style="background: #e74c3c; margin-left: 10px;">Submit a Complaint</a>
+</p>
+{% endblock %}
+

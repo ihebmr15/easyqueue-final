@@ -1,0 +1,32 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Edit Category - Admin{% endblock %}
+
+{% block body %}
+<h1>Edit Category: {{ category.name|e }}</h1>
+
+<div style="max-width: 600px;">
+    <form method="post" action="{{ path('admin_category_edit', {'id': category.id}) }}">
+        <input type="hidden" name="_token" value="{{ csrf_token('category_edit') }}">
+        
+        <div class="form-group">
+            <label for="name">Category Name *</label>
+            <input type="text" id="name" name="name" required maxlength="255" value="{{ category.name|e }}">
+        </div>
+
+        <div class="form-group">
+            <label for="description">Description</label>
+            <textarea id="description" name="description" rows="4">{{ category.description|e }}</textarea>
+        </div>
+
+        <div style="display: flex; gap: 10px; margin-top: 20px;">
+            <button type="submit" class="btn btn-success">Update Category</button>
+            <a href="{{ path('admin_category_list') }}" class="btn" style="background: #95a5a6;">Cancel</a>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+
+
+
