@@ -127,13 +127,22 @@
         {% for service in services %}
             <tr>
                 <td>
-                    <strong>{{ service.name|e }}</strong>
-                    {% if service.category %}
-                        <br><small style="color: #667eea;">Category: {{ service.category.name|e }}</small>
-                    {% endif %}
-                    {% if service.image %}
-                        <br><small style="color: #27ae60;">✓ Has Image</small>
-                    {% endif %}
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        {% if service.image %}
+                            <img src="{{ asset(service.image) }}" alt="{{ service.name|e }}" style="width: 50px; height: 50px; object-fit: cover; border-radius: 5px; border: 1px solid #ddd;">
+                        {% endif %}
+                        <div>
+                            <strong>{{ service.name|e }}</strong>
+                            {% if service.category %}
+                                <br><small style="color: #667eea;">Category: {{ service.category.name|e }}</small>
+                            {% endif %}
+                            {% if service.image %}
+                                <br><small style="color: #27ae60;">✓ Has Image</small>
+                            {% else %}
+                                <br><small style="color: #999;">No Image</small>
+                            {% endif %}
+                        </div>
+                    </div>
                 </td>
                 <td>{{ serviceStats[service.name].total ?? 0 }}</td>
                 <td>{{ serviceStats[service.name].pending ?? 0 }}</td>

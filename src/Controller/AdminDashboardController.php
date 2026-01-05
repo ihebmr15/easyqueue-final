@@ -211,12 +211,30 @@ class AdminDashboardController extends AbstractController
             $imageFile = $request->files->get('image');
             if ($imageFile) {
                 $originalFilename = pathinfo($imageFile->getClientOriginalName(), PATHINFO_FILENAME);
+                $originalExtension = strtolower(pathinfo($imageFile->getClientOriginalName(), PATHINFO_EXTENSION));
+                
+                // Validate file extension
+                $allowedExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
+                if (!in_array($originalExtension, $allowedExtensions)) {
+                    $this->addFlash('error', 'Invalid image type. Only JPEG, PNG, GIF, and WebP are allowed.');
+                    return $this->redirectToRoute('admin_dashboard');
+                }
+                
                 $safeFilename = $slugger->slug($originalFilename);
-                $newFilename = $safeFilename . '-' . uniqid() . '.' . $imageFile->guessExtension();
+                $newFilename = $safeFilename . '-' . uniqid() . '.' . $originalExtension;
 
-                // Validate file type
+                // Validate file type using PHP's built-in function
+                $mimeType = null;
+                if (function_exists('mime_content_type')) {
+                    $mimeType = mime_content_type($imageFile->getPathname());
+                } elseif (function_exists('finfo_file')) {
+                    $finfo = finfo_open(FILEINFO_MIME_TYPE);
+                    $mimeType = finfo_file($finfo, $imageFile->getPathname());
+                    finfo_close($finfo);
+                }
+                
                 $allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
-                if (!in_array($imageFile->getMimeType(), $allowedTypes)) {
+                if ($mimeType && !in_array($mimeType, $allowedTypes)) {
                     $this->addFlash('error', 'Invalid image type. Only JPEG, PNG, GIF, and WebP are allowed.');
                     return $this->redirectToRoute('admin_dashboard');
                 }
@@ -309,12 +327,30 @@ class AdminDashboardController extends AbstractController
                 }
 
                 $originalFilename = pathinfo($imageFile->getClientOriginalName(), PATHINFO_FILENAME);
+                $originalExtension = strtolower(pathinfo($imageFile->getClientOriginalName(), PATHINFO_EXTENSION));
+                
+                // Validate file extension
+                $allowedExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
+                if (!in_array($originalExtension, $allowedExtensions)) {
+                    $this->addFlash('error', 'Invalid image type. Only JPEG, PNG, GIF, and WebP are allowed.');
+                    return $this->redirectToRoute('admin_service_edit', ['id' => $service->getId()]);
+                }
+                
                 $safeFilename = $slugger->slug($originalFilename);
-                $newFilename = $safeFilename . '-' . uniqid() . '.' . $imageFile->guessExtension();
+                $newFilename = $safeFilename . '-' . uniqid() . '.' . $originalExtension;
 
-                // Validate file type and size
+                // Validate file type using PHP's built-in function
+                $mimeType = null;
+                if (function_exists('mime_content_type')) {
+                    $mimeType = mime_content_type($imageFile->getPathname());
+                } elseif (function_exists('finfo_file')) {
+                    $finfo = finfo_open(FILEINFO_MIME_TYPE);
+                    $mimeType = finfo_file($finfo, $imageFile->getPathname());
+                    finfo_close($finfo);
+                }
+                
                 $allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
-                if (!in_array($imageFile->getMimeType(), $allowedTypes)) {
+                if ($mimeType && !in_array($mimeType, $allowedTypes)) {
                     $this->addFlash('error', 'Invalid image type.');
                     return $this->redirectToRoute('admin_service_edit', ['id' => $service->getId()]);
                 }

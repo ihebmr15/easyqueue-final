@@ -1,6 +1,0 @@
-{
-  "total_attacks": 26,
-  "sql_injection": 1,
-  "xss": 1,
-  "path_traversal": 22
-}
